@@ -1,0 +1,97 @@
+{
+  "mode": "replay-only",
+  "results": [
+    {
+      "prompt": "causa-raiz",
+      "evalId": "eval-Y2y-2026-11-03T00:19:05",
+      "successes": 1,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "prompt": "decisao-de-backpressure",
+      "evalId": "eval-sNe-2026-11-03T00:19:06",
+      "successes": 1,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "prompt": "diagnostico-da-migracao",
+      "evalId": "eval-lze-2026-11-03T00:19:08",
+      "successes": 1,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "prompt": "execucao-reversivel-da-migracao",
+      "evalId": "eval-amB-2026-11-03T00:19:11",
+      "successes": 1,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "prompt": "networkpolicy-sentinel",
+      "evalId": "eval-0Uc-2026-11-03T00:19:13",
+      "successes": 1,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "prompt": "nota-de-triagem",
+      "evalId": "eval-eBV-2026-11-03T00:19:03",
+      "successes": 3,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "prompt": "plano-da-migracao",
+      "evalId": "eval-Lyp-2026-11-03T00:19:09",
+      "successes": 1,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "prompt": "triagem-de-pods",
+      "evalId": "eval-mKE-2026-11-03T00:19:01",
+      "successes": 3,
+      "failures": 0,
+      "errors": 0
+    }
+  ],
+  "negativeTestExitCode": 100,
+  "negativeTestResult": {
+    "successes": 0,
+    "failures": 1,
+    "errors": 0,
+    "tokenUsage": {
+      "prompt": 0,
+      "completion": 0,
+      "cached": 0,
+      "total": 0,
+      "numRequests": 1,
+      "completionDetails": {
+        "reasoning": 0,
+        "acceptedPrediction": 0,
+        "rejectedPrediction": 0,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0
+      },
+      "assertions": {
+        "total": 0,
+        "prompt": 0,
+        "completion": 0,
+        "cached": 0,
+        "numRequests": 0,
+        "completionDetails": {
+          "reasoning": 0,
+          "acceptedPrediction": 0,
+          "rejectedPrediction": 0,
+          "cacheReadInputTokens": 0,
+          "cacheCreationInputTokens": 0
+        }
+      }
+    },
+    "durationMs": 41,
+    "evaluationDurationMs": 41
+  }
+}
