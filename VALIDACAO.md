@@ -43,3 +43,18 @@ Revisar notas sugeridas pelo GPT e registrar notas humanas verdadeiras, configur
 Esta revisão remove a exigência de chave Anthropic em todos os runners e no workflow. A matriz atual contém GPT-4o mini e GPT-6 Luna. O baseline usa essa mesma matriz, os testes e a rubrica atuais sobre os prompts da revisão anterior. A comparação estruturada tem job próprio (`compare-models`), sem inventar notas humanas para liberar a avaliação completa.
 
 Verificação local desta revisão: `npm test` aprovado; replay das oito configs com **12 passes, 0 falhas e 0 erros**. Isso valida a migração da configuração e os contratos, sem provar inferência real. Resultados reais da comparação, incluindo erros de API e reprovações, ficam no resumo e artifact `openai-model-comparison` do run mais recente do Actions. O registro histórico de falta de chave acima permanece como evidência daquela execução.
+
+## Comparação real OpenAI — run #31
+
+[Execução de 02/11/2026 às 22:56 (America/Sao_Paulo)](https://github.com/tfcarv2/playbook-ia-operacional/actions/runs/41562920321), commit `1376529191607e8da42063e8e7057fb073330edb`. Offline aprovado em 35s; 14 gerações reais sem cache em `compare-models`.
+
+| Modelo | Passou / casos | Reprovações | Erros de API nos logs | Latência média / máxima | Custo total informado |
+|---|---:|---:|---:|---|---:|
+| GPT-4o mini | 3 / 7 | 4 | 0 | 2.471 / 4.546 ms | US$ 0,001413 |
+| GPT-6 Luna | 7 / 7 | 0 | 0 | 3.255,71 / 4.667 ms | US$ 0,001198 |
+
+Nota de triagem: 6/6 aprovados. Triagem de pods: 3/6 aprovados. NetworkPolicy: 1/2 aprovado. O custo é informado/calculado pelo promptfoo, sem conciliação de fatura. Ambos ficaram abaixo de 5s de latência máxima nesta amostra; isso não garante futuras chamadas nem valida os prompts abertos. O job corretamente reprovou por quatro testes do GPT-4o mini; `live` ficou skipped por dependência, e a revisão humana continua pendente. Não foram relaxados asserts para produzir status verde.
+
+O resumo inicial do run contabilizou `row.error` como erro de API, mas esse campo do promptfoo também contém motivos de assert reprovado. Assim, a coluna Erros daquele resumo mostra incorretamente 4 para GPT-4o mini. Os três logs de eval registram **0 errors**. O agregador foi corrigido para usar `failureReason === 2` (erro) e separar `1` (assert), com teste local dos dois casos; o artifact original permanece preservado. Nas próximas execuções, o resumo também lista os motivos das reprovações. Correções de relato/documentação usam `[skip ci]` para não repetir as 14 chamadas pagas sem mudança nos prompts ou modelos.
+
+Artifact: [openai-model-comparison](https://github.com/tfcarv2/playbook-ia-operacional/actions/runs/41562920321/artifacts/13197092439). Para investigar os quatro asserts, consultar `gradingResult`/`error` nos JSONs desse artifact antes de alterar prompts; esta migração não atribui causas sem inspecionar esses registros.
