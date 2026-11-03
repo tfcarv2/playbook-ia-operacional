@@ -1,0 +1,42 @@
+---
+nome: Causa-raiz de degradação
+descricao: Analisar configuração, métricas e logs para explicar cadeia causal e limites
+  de confiança
+versao: 1.0.0
+tags:
+- sre
+- observabilidade
+- playbook
+inputs:
+- nome: artefatos
+  descricao: Pacote de configuração, métricas e logs com timestamps e origem.
+---
+# Causa-raiz de degradação
+
+## Objetivo e casos de uso
+
+Analisar configuração, métricas e logs para explicar cadeia causal e limites de confiança. Usar com o pacote de dados do incidente colado na entrada. O modelo apenas analisa os dados recebidos.
+
+## Entradas e exemplo de uso
+
+Os parâmetros estão no frontmatter. Exemplos completos constam em `promptfooconfig.yaml`, no campo `tests[].vars`. Remover o frontmatter ao copiar o prompt para o chat; o executor faz isso automaticamente.
+
+```bash
+npx promptfoo eval -c devops/causa-raiz/promptfooconfig.yaml --no-cache
+```
+
+Exemplo de saída registrado: [execuções assistidas](../../evidencias/EXECUCOES.md). Identificador principal: `cp03`.
+
+## Curadoria
+
+R-I-S-E organiza correlação temporal e causalidade baseada em evidências, sem pedir cadeia de pensamento privada. Refino: distinguir reindexação prolongada de ausência total de progresso e separar causa operacional da razão ainda desconhecida do atraso. Pseudonimização preserva a utilidade diagnóstica.
+
+## Modelo, custo, latência e privacidade
+
+As respostas iniciais foram geradas pelo GPT-6, Codex nesta conversa, com contexto compartilhado, em 02/11/2026; não são chamadas de API isoladas. Escolha motivada por análise técnica e consistência de instruções. Não houve medição de custo/token ou latência de inferência nesta sessão.
+
+O config prepara avaliação live com OpenAI e Anthropic em modelos compactos; nomes configurados são candidatos, não provedores já executados. Os limites de 5s e US$ 0,01 precisam ser medidos. Casos fictícios podem ser publicados; dados reais exigem sanitização e política de retenção do provedor aprovada.
+
+## Limitações
+
+Não é diagnóstico obtido de ambiente real nem autorização de mudança. Revisar conclusões e compatibilidade operacional. A saída varia por modelo. Replay testa os asserts sobre registros, sem avaliar a qualidade de uma nova geração.
