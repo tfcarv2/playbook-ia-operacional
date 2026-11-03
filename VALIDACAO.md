@@ -12,7 +12,7 @@ Registro: 02/11/2026 (America/Sao_Paulo; os IDs do promptfoo usam 03/11 UTC).
 | Calibração sem notas humanas | **Exit 2**, pede pontuação humana real | Não há calibração humana concluída |
 | Workflow GitHub Actions, run #1 | **offline aprovado em 29s**; live falhou em 16s no preflight por `OPENAI_API_KEY` ausente | Não houve inferência live; etapas de geração/juiz foram impedidas |
 | Kubernetes/CNI, Elasticsearch, Relay, Spark e warehouse | Não acessados | Nenhuma mudança operacional aplicada |
-| Dois provedores reais | **Pendente** | Configurar dois modelos não equivale a executá-los |
+| Dois provedores reais | **Fora da configuração solicitada** | A versão atual compara dois modelos OpenAI; não cumpre a regra original de dois fornecedores |
 | Latência ≤5s e custo ≤US$0,01 por geração | **Pendente** | Os tempos do replay medem leitura de fixture, não inferência |
 
 Saída real do promptfoo: [REPLAY.txt](evidencias/REPLAY.txt). Resumo com eval IDs: [replay-resumo.json](evidencias/replay-resumo.json). Os outputs da sessão estão em [outputs.json](evidencias/outputs.json), separados dos resultados do executor.
@@ -36,4 +36,10 @@ O provider local não declara tokens, preço ou latência de modelo. O promptfoo
 
 ## Antes da submissão definitiva
 
-Revisar notas sugeridas pelo GPT e registrar notas humanas verdadeiras, configurar os dois Secrets, executar/calibrar o juiz e rodar a suíte live. Preservar as falhas, medir custo e latência e ajustar modelos/prompts quando necessário. Registrar link de run live e tornar checks obrigatórios na proteção de branch. Somente então atualizar esta situação para concluída.
+Revisar notas sugeridas pelo GPT e registrar notas humanas verdadeiras, configurar somente o Secret `OPENAI_API_KEY`, executar/calibrar o juiz e rodar a suíte live. Preservar as falhas, medir custo e latência e ajustar modelos/prompts quando necessário. Registrar link de run live e tornar checks obrigatórios na proteção de branch. Somente então atualizar esta situação para concluída.
+
+## Migração para dois modelos OpenAI
+
+Esta revisão remove a exigência de chave Anthropic em todos os runners e no workflow. A matriz atual contém GPT-4o mini e GPT-6 Luna. O baseline usa essa mesma matriz, os testes e a rubrica atuais sobre os prompts da revisão anterior. A comparação estruturada tem job próprio (`compare-models`), sem inventar notas humanas para liberar a avaliação completa.
+
+Verificação local desta revisão: `npm test` aprovado; replay das oito configs com **12 passes, 0 falhas e 0 erros**. Isso valida a migração da configuração e os contratos, sem provar inferência real. Resultados reais da comparação, incluindo erros de API e reprovações, ficam no resumo e artifact `openai-model-comparison` do run mais recente do Actions. O registro histórico de falta de chave acima permanece como evidência daquela execução.
