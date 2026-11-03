@@ -1,24 +1,16 @@
-# DevOps
+# DevOps — Playbook Aegis
 
-Prompts voltados a **infraestrutura, automação e operação** de sistemas: pipelines de CI/CD, containers, orquestração, provisionamento, observabilidade, confiabilidade e segurança operacional.
+Prompts para observabilidade, SRE, segurança e migração de dados.
 
-## Escopo
+| Prompt | Pasta | Objetivo |
+|---|---|---|
+| [Triagem de pods](triagem-de-pods/README.md) | `triagem-de-pods` | Cruzar status, eventos e logs para apontar causas prováveis e próxima ação |
+| [Nota de triagem](nota-de-triagem/README.md) | `nota-de-triagem` | Converter alerta cru em nota de cinco campos com evidências e incertezas |
+| [Causa-raiz de degradação](causa-raiz/README.md) | `causa-raiz` | Analisar configuração, métricas e logs para explicar cadeia causal e limites de confiança |
+| [Decisão de backpressure](decisao-de-backpressure/README.md) | `decisao-de-backpressure` | Comparar alternativas de contenção de carga sem perda de telemetry e com SLAs distintos |
+| [Diagnóstico da migração](diagnostico-da-migracao/README.md) | `diagnostico-da-migracao` | Inventariar contratos, dependências e riscos do pipeline batch antes da migração |
+| [Plano da migração](plano-da-migracao/README.md) | `plano-da-migracao` | Planejar fases incrementais a partir do diagnóstico do Forge |
+| [Execução reversível da migração](execucao-reversivel-da-migracao/README.md) | `execucao-reversivel-da-migracao` | Detalhar responsáveis, evidências, gates e rollback do plano aprovado |
+| [NetworkPolicy do Sentinel](networkpolicy-sentinel/README.md) | `networkpolicy-sentinel` | Gerar default-deny e fluxos mínimos com seletores de namespace e pod combinados |
 
-Entram aqui prompts relacionados a:
-
-- Pipelines de CI/CD (GitHub Actions, GitLab CI, Jenkins etc.).
-- Containers e orquestração (Docker, Kubernetes, Helm).
-- Infraestrutura como código (Terraform, Pulumi, Ansible).
-- Provedores de nuvem (AWS, GCP, Azure) e seus recursos.
-- Observabilidade (logs, métricas, tracing, alertas, dashboards).
-- Confiabilidade, SRE, postmortems e análise de incidentes.
-- Segurança operacional (hardening, secrets, políticas de acesso).
-
-## Fora de escopo
-
-- Escrita de código de aplicação → usar `desenvolvimento/`.
-- Conteúdo educacional sobre DevOps (aulas, artigos, vídeos) → usar `criacao-conteudo/`.
-
-## Prompts
-
-_Nenhum prompt cadastrado ainda._
+Cada pasta contém prompt.md, README.md e promptfooconfig.yaml. Todos iniciam em 1.0.0. Os três elos da migração ficam no mesmo nível da categoria, sem aninhar categorias.
