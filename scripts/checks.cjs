@@ -19,6 +19,8 @@ for (const [slug] of catalog) {
   assert.deepEqual(placeholders,p.metadata.inputs.map(i=>i.nome).sort(),`Inputs divergentes: ${slug}`);
   const cfg = YAML.parse(fs.readFileSync(path.join(folder,'promptfooconfig.yaml'),'utf8'));
   assert.equal(cfg.providers.length,2);
+  assert.deepEqual(cfg.providers.map(p=>p.id),['openai:gpt-4o-mini','openai:gpt-6-luna']);
+  assert.equal(cfg.providers[1].config.reasoning_effort,'none');
   assert.ok(cfg.defaultTest.assert.some(a=>a.type==='latency' && a.threshold===5000));
   assert.ok(cfg.defaultTest.assert.some(a=>a.type==='cost' && a.threshold===0.01));
   for (const test of cfg.tests) {
@@ -50,4 +52,11 @@ const gate=require('./gate.cjs');
 assert.equal(gate.numbers('C1=2;C2=2;C3=1;C4=1;total=6;ok').pass,true);
 assert.equal(gate.numbers('C1=2;C2=2;C3=2;C4=0;total=6;reprovado').pass,false);
 assert.throws(()=>gate.numbers('C1=2;C2=2;C3=2;C4=2;total=6;soma incorreta'));
+// Regressão da migração: nem o baseline pode reintroduzir outro fornecedor.
+const baseline=require('./baseline.cjs')(root);
+assert.deepEqual(baseline.providers.map(p=>p.id),['openai:gpt-4o-mini','openai:gpt-6-luna']);
+assert.ok(baseline.prompts[0].startsWith('file://'));
+const workflow=fs.readFileSync(path.join(root,'.github/workflows/playbook.yml'),'utf8');
+assert.ok(!workflow.includes('ANTHROPIC_API_KEY'));
+assert.ok(!fs.readFileSync(path.join(root,'scripts/run.cjs'),'utf8').includes('ANTHROPIC_API_KEY'));
 console.log(`PASS: ${catalog.length} prompts; ${checked} casos; 8 regressões rejeitadas; cadeia CP05 íntegra.`);
