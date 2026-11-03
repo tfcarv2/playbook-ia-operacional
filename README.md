@@ -10,7 +10,7 @@ Fork real de [fabricioveronez/prompt-registry](https://github.com/fabricioverone
 - Respostas dos CP01–06 geradas pelo **GPT-6, Codex nesta conversa**, com contexto compartilhado e sem chamadas independentes. São registros de elaboração assistida, não sessões isoladas.
 - `promptfoo eval` executado em modo **replay** sobre respostas registradas para validar asserts. Replay não mede inferência, custo, latência de modelo ou julgamento LLM.
 - **Pendentes:** chamadas reais em dois provedores, limites live de 5s/US$ 0,01 e calibração do juiz contra notas humanas. A suíte live falha de forma explícita sem configuração, sem fingir aprovação.
-- O workflow será verificado no GitHub após publicação; evidências reais e limitações em [VALIDACAO.md](VALIDACAO.md).
+- O [workflow foi executado no GitHub](https://github.com/tfcarv2/playbook-ia-operacional/actions/runs/41554477116): **offline aprovado**; live bloqueado no preflight por `OPENAI_API_KEY` ausente. Evidências e limites em [VALIDACAO.md](VALIDACAO.md).
 
 Não declarar o capstone integralmente concluído antes de fechar essas pendências. Nenhum sistema de produção foi acessado ou alterado.
 
