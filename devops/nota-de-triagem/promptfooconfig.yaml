@@ -1,0 +1,90 @@
+description: Nota de triagem
+prompts:
+- file://../../scripts/render.cjs
+providers:
+- id: openai:gpt-4o-mini
+  config:
+    temperature: 0
+    max_tokens: 2200
+- id: anthropic:messages:claude-haiku-4-5-20251001
+  config:
+    temperature: 0
+    max_tokens: 2200
+defaultTest:
+  assert:
+  - type: javascript
+    value: file://../../scripts/assertions.cjs
+  - type: latency
+    threshold: 5000
+  - type: cost
+    threshold: 0.01
+tests:
+- description: cp02-1
+  vars:
+    _slug: nota-de-triagem
+    _case_id: cp02-1
+    alerta_cru: '2026-05-12 14:02:09 UTC [Sentinel] autoscaler hit max replicas (60/60) on sentinel-api,
+
+      queue depth on Relay growing 2k/min, CPU avg 88%, tenant stark-industries
+
+      sending 4x baseline volume after onboarding new region'
+  assert:
+  - type: contains
+    value: 'ALERTA:'
+  - type: contains
+    value: 'IMPACTO:'
+  - type: contains
+    value: 'HIPÓTESE INICIAL:'
+  - type: contains
+    value: 'AÇÃO IMEDIATA:'
+  - type: contains
+    value: 'ESCALAR PARA:'
+  - type: regex
+    value: ESCALAR PARA:.*@\w+
+  - type: javascript
+    value: output.trim().split(/\r?\n/).length <= 8
+- description: cp02-2
+  vars:
+    _slug: nota-de-triagem
+    _case_id: cp02-2
+    alerta_cru: '2026-05-13 03:11:00 UTC [Relay] ingest reject rate 6% for 8min, tenant wakanda-systems,
+
+      buffer saturated after deploy 02:55'
+  assert:
+  - type: contains
+    value: 'ALERTA:'
+  - type: contains
+    value: 'IMPACTO:'
+  - type: contains
+    value: 'HIPÓTESE INICIAL:'
+  - type: contains
+    value: 'AÇÃO IMEDIATA:'
+  - type: contains
+    value: 'ESCALAR PARA:'
+  - type: regex
+    value: ESCALAR PARA:.*@\w+
+  - type: javascript
+    value: output.trim().split(/\r?\n/).length <= 8
+- description: cp02-3
+  vars:
+    _slug: nota-de-triagem
+    _case_id: cp02-3
+    alerta_cru: '2026-05-13 11:40:22 UTC [Forge] consumer lag 9min and climbing, batch forge-batch-ingest
+
+      delayed after previous job failure, downstream Sentinel starting to lag'
+  assert:
+  - type: contains
+    value: 'ALERTA:'
+  - type: contains
+    value: 'IMPACTO:'
+  - type: contains
+    value: 'HIPÓTESE INICIAL:'
+  - type: contains
+    value: 'AÇÃO IMEDIATA:'
+  - type: contains
+    value: 'ESCALAR PARA:'
+  - type: regex
+    value: ESCALAR PARA:.*@\w+
+  - type: javascript
+    value: output.trim().split(/\r?\n/).length <= 8
+sharing: false
