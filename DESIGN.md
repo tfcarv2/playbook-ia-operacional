@@ -28,6 +28,8 @@ GitHub Actions executa o job de validação local sem secrets em qualquer PR. A 
 
 O workflow estar versionado não ativa proteção de branch. Para bloquear integração, o dono precisa tornar os checks `offline` e `live` obrigatórios na regra de proteção da branch. Essa configuração não foi aplicada automaticamente. Forks podem exigir habilitar Actions na interface. A execução live também depende das duas chaves e da calibração humana: sua ausência aparece como falha explícita, nunca como validação concluída.
 
+O bootstrap publicado pelo editor web preserva títulos automáticos de commits; nem todos seguem o padrão semântico do template. O commit de fechamento demonstra `docs(devops): ...`, mas o histórico inicial ainda tem essa limitação. Não foi reescrito o histórico público para ocultá-la. Novas alterações devem usar o padrão semântico e revisão de versão/documentação em conjunto.
+
 ## Carga e orçamento
 
 A suíte tem 12 casos × 2 geradores = 24 chamadas por revisão, mais 10 julgamentos de saídas abertas (5 casos × 2). Rodar base e head usa aproximadamente 68 chamadas, antes da calibração (3 chamadas de juiz) e eventual segunda avaliação da action para comentário. É um teto de quantidade de chamadas previsto, não custo medido. Tokens de entrada/saída, retries e preços reais variam.
