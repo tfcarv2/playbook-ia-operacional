@@ -10,12 +10,18 @@ Registro: 02/11/2026 (America/Sao_Paulo; os IDs do promptfoo usam 03/11 UTC).
 | Gate composto | 6 pontos sem zero passa; 6 com zero reprova; soma inconsistente reprova | Teste de lógica, sem julgamento live |
 | Suite live sem credencial | **Exit 2**, informa variável ausente antes de chamar API | Bloqueio esperado de configuração, não benchmark |
 | Calibração sem notas humanas | **Exit 2**, pede pontuação humana real | Não há calibração humana concluída |
-| Workflow GitHub Actions | Arquivo implementado; execução remota será registrada após publicação | Não confundir arquivo com execução comprovada |
+| Workflow GitHub Actions, run #1 | **offline aprovado em 29s**; live falhou em 16s no preflight por `OPENAI_API_KEY` ausente | Não houve inferência live; etapas de geração/juiz foram impedidas |
 | Kubernetes/CNI, Elasticsearch, Relay, Spark e warehouse | Não acessados | Nenhuma mudança operacional aplicada |
 | Dois provedores reais | **Pendente** | Configurar dois modelos não equivale a executá-los |
 | Latência ≤5s e custo ≤US$0,01 por geração | **Pendente** | Os tempos do replay medem leitura de fixture, não inferência |
 
 Saída real do promptfoo: [REPLAY.txt](evidencias/REPLAY.txt). Resumo com eval IDs: [replay-resumo.json](evidencias/replay-resumo.json). Os outputs da sessão estão em [outputs.json](evidencias/outputs.json), separados dos resultados do executor.
+
+## Execução remota comprovada
+
+[Run #1 no GitHub Actions](https://github.com/tfcarv2/playbook-ia-operacional/actions/runs/41554477116), commit `1de0587cb2be16e35016b43d1fd8207833973c37`, iniciado por push em 02/11/2026 às 21:40 (America/Sao_Paulo). O [job offline](https://github.com/tfcarv2/playbook-ia-operacional/actions/runs/41554477116/job/125649891080) concluiu com sucesso, incluindo os oito evals e o artifact `replay-results`. O [job live](https://github.com/tfcarv2/playbook-ia-operacional/actions/runs/41554477116/job/125650104721) terminou com `Error: PENDENTE: configurar GitHub Secret OPENAI_API_KEY` no passo de pré-requisitos, antes de calibração e geração.
+
+Esse fail demonstra que a ausência de configuração não aprova a suíte. Não é evidência de regressão de prompt em um modelo real. A regressão negativa de saída v1 foi demonstrada somente no replay local. Os 58 arquivos publicados foram comparados aos arquivos locais validados, sem divergências. Atualizações documentais posteriores geram novos runs pelo trigger de push.
 
 O provider local não declara tokens, preço ou latência de modelo. O promptfoo pode preencher contadores/custo zero e duração curta em seus relatórios: são metadados do replay e não evidência de modelo gratuito ou rápido. Os asserts de custo/latência e LLM-as-judge são removidos exclusivamente do modo replay; permanecem nos oito configs de produção e na suíte live.
 
