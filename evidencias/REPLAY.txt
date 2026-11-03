@@ -1,0 +1,172 @@
+REPLAY LOCAL — NÃO É CHAMADA DE MODELO
+Os valores de custo/tokens/latência destes arquivos são do replay, não de inferência.
+
+=== causa-raiz ===
+Cache is disabled.
+Starting evaluation eval-Y2y-2026-11-03T00:19:05
+Running 1 test cases (up to 1 at a time)...
+✓ Eval complete (ID: eval-Y2y-2026-11-03T00:19:05)
+
+» View results: promptfoo view
+» Share with your team: https://promptfoo.app
+» Feedback: https://promptfoo.dev/feedback
+
+
+Results:
+  ✓ 1 passed (100%)
+  0 failed (0%)
+  0 errors (0%)
+Duration: 0s (concurrency: 1)
+
+Writing output to /workspace/scratch/10eb247d214b/playbook-ia-operacional/results/replay/causa-raiz.json
+
+=== decisao-de-backpressure ===
+Cache is disabled.
+Starting evaluation eval-sNe-2026-11-03T00:19:06
+Running 1 test cases (up to 1 at a time)...
+✓ Eval complete (ID: eval-sNe-2026-11-03T00:19:06)
+
+» View results: promptfoo view
+» Share with your team: https://promptfoo.app
+» Feedback: https://promptfoo.dev/feedback
+
+
+Results:
+  ✓ 1 passed (100%)
+  0 failed (0%)
+  0 errors (0%)
+Duration: 0s (concurrency: 1)
+
+Writing output to /workspace/scratch/10eb247d214b/playbook-ia-operacional/results/replay/decisao-de-backpressure.json
+
+=== diagnostico-da-migracao ===
+Cache is disabled.
+Starting evaluation eval-lze-2026-11-03T00:19:08
+Running 1 test cases (up to 1 at a time)...
+✓ Eval complete (ID: eval-lze-2026-11-03T00:19:08)
+
+» View results: promptfoo view
+» Share with your team: https://promptfoo.app
+» Feedback: https://promptfoo.dev/feedback
+
+
+Results:
+  ✓ 1 passed (100%)
+  0 failed (0%)
+  0 errors (0%)
+Duration: 0s (concurrency: 1)
+
+Writing output to /workspace/scratch/10eb247d214b/playbook-ia-operacional/results/replay/diagnostico-da-migracao.json
+
+=== execucao-reversivel-da-migracao ===
+Cache is disabled.
+Starting evaluation eval-amB-2026-11-03T00:19:11
+Running 1 test cases (up to 1 at a time)...
+✓ Eval complete (ID: eval-amB-2026-11-03T00:19:11)
+
+» View results: promptfoo view
+» Share with your team: https://promptfoo.app
+» Feedback: https://promptfoo.dev/feedback
+
+
+Results:
+  ✓ 1 passed (100%)
+  0 failed (0%)
+  0 errors (0%)
+Duration: 0s (concurrency: 1)
+
+Writing output to /workspace/scratch/10eb247d214b/playbook-ia-operacional/results/replay/execucao-reversivel-da-migracao.json
+
+=== networkpolicy-sentinel ===
+Cache is disabled.
+Starting evaluation eval-0Uc-2026-11-03T00:19:13
+Running 1 test cases (up to 1 at a time)...
+✓ Eval complete (ID: eval-0Uc-2026-11-03T00:19:13)
+
+» View results: promptfoo view
+» Share with your team: https://promptfoo.app
+» Feedback: https://promptfoo.dev/feedback
+
+
+Results:
+  ✓ 1 passed (100%)
+  0 failed (0%)
+  0 errors (0%)
+Duration: 0s (concurrency: 1)
+
+Writing output to /workspace/scratch/10eb247d214b/playbook-ia-operacional/results/replay/networkpolicy-sentinel.json
+
+=== nota-de-triagem ===
+Cache is disabled.
+Starting evaluation eval-eBV-2026-11-03T00:19:03
+Running 3 test cases (up to 1 at a time)...
+✓ Eval complete (ID: eval-eBV-2026-11-03T00:19:03)
+
+» View results: promptfoo view
+» Share with your team: https://promptfoo.app
+» Feedback: https://promptfoo.dev/feedback
+
+
+Results:
+  ✓ 3 passed (100%)
+  0 failed (0%)
+  0 errors (0%)
+Duration: 0s (concurrency: 1)
+
+Writing output to /workspace/scratch/10eb247d214b/playbook-ia-operacional/results/replay/nota-de-triagem.json
+
+=== plano-da-migracao ===
+Cache is disabled.
+Starting evaluation eval-Lyp-2026-11-03T00:19:09
+Running 1 test cases (up to 1 at a time)...
+✓ Eval complete (ID: eval-Lyp-2026-11-03T00:19:09)
+
+» View results: promptfoo view
+» Share with your team: https://promptfoo.app
+» Feedback: https://promptfoo.dev/feedback
+
+
+Results:
+  ✓ 1 passed (100%)
+  0 failed (0%)
+  0 errors (0%)
+Duration: 0s (concurrency: 1)
+
+Writing output to /workspace/scratch/10eb247d214b/playbook-ia-operacional/results/replay/plano-da-migracao.json
+
+=== triagem-de-pods ===
+Cache is disabled.
+Starting evaluation eval-mKE-2026-11-03T00:19:01
+Running 3 test cases (up to 1 at a time)...
+✓ Eval complete (ID: eval-mKE-2026-11-03T00:19:01)
+
+» View results: promptfoo view
+» Share with your team: https://promptfoo.app
+» Feedback: https://promptfoo.dev/feedback
+
+
+Results:
+  ✓ 3 passed (100%)
+  0 failed (0%)
+  0 errors (0%)
+Duration: 0s (concurrency: 1)
+
+Writing output to /workspace/scratch/10eb247d214b/playbook-ia-operacional/results/replay/triagem-de-pods.json
+
+=== REGRESSÃO PROPOSITAL: OUTPUT v1 DE NETWORKPOLICY ===
+Cache is disabled.
+Starting evaluation eval-q3D-2026-11-03T00:24:30
+Running 1 test cases (up to 4 at a time)...
+✓ Eval complete (ID: eval-q3D-2026-11-03T00:24:30)
+
+» View results: promptfoo view
+» Feedback: https://promptfoo.dev/feedback
+
+
+Results:
+  0 passed (0%)
+  ✗ 1 failed (100%)
+  0 errors (0%)
+Duration: 0s (concurrency: 4)
+
+Writing output to results/regressao-v1.json
