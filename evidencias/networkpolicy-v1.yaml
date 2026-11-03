@@ -1,0 +1,30 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: sentinel-allow
+  namespace: sentinel-prod
+spec:
+  podSelector:
+    matchLabels:
+      app: sentinel
+  policyTypes: [Ingress, Egress]
+  ingress:
+    # Relay: eventos para Sentinel, mas esta versão não restringe namespace.
+    - from:
+        - podSelector:
+            matchLabels:
+              app: relay
+    # Gateway: requisições para Sentinel, namespace ausente nesta tentativa.
+    - from:
+        - podSelector:
+            matchLabels:
+              app: api-gateway
+  egress:
+    # Warehouse, sem namespace ainda.
+    - to:
+        - podSelector:
+            matchLabels:
+              app: forge
+      ports:
+        - protocol: TCP
+          port: 5432
