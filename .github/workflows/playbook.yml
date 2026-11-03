@@ -1,0 +1,123 @@
+name: Playbook quality
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: playbook-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run eval:replay
+        env:
+          PROMPTFOO_DISABLE_TELEMETRY: '1'
+          PROMPTFOO_DISABLE_UPDATE: '1'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: replay-results
+          path: results/replay/
+          retention-days: 14
+
+  live:
+    needs: offline
+    # Forks não recebem credenciais. Não usar pull_request_target.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      pull-requests: write
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      PROMPTFOO_DISABLE_TELEMETRY: '1'
+      PROMPTFOO_DISABLE_UPDATE: '1'
+      BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before || '' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Require configured providers and human review
+        run: |
+          node - <<'JS'
+          for (const key of ['OPENAI_API_KEY','ANTHROPIC_API_KEY']) {
+            if (!process.env[key]) throw new Error(`PENDENTE: configurar GitHub Secret ${key}`);
+          }
+          const refs = require('./evidencias/calibracao.json');
+          if (refs.some(r => !r.humanScores || !r.reviewedByHuman)) {
+            throw new Error('PENDENTE: pontuação humana real antes de calibrar juiz');
+          }
+          JS
+      - name: Calibrate judge against human references
+        run: |
+          mkdir -p results
+          # Casos negativos da calibração devem falhar no rubric; o verificador abaixo valida a concordância.
+          npx promptfoo eval -c calibracao.yaml -o results/calibracao.json --no-cache --max-concurrency 1 || true
+          node scripts/calibrate.cjs results/calibracao.json
+      - name: Evaluate candidate with full suite
+        run: |
+          npx promptfoo eval -c promptfooconfig.yaml -o results/head.json --no-cache --max-concurrency 1
+          node scripts/gate.cjs results/head.json
+      - name: Evaluate comparable baseline
+        run: |
+          if [ -z "$BASE_SHA" ] || [ "$BASE_SHA" = 0000000000000000000000000000000000000000 ]; then
+            echo "Bootstrap/manual: sem SHA de base; gate absoluto aplicado."
+            exit 0
+          fi
+          git worktree add --detach /tmp/playbook-base "$BASE_SHA"
+          if [ ! -f /tmp/playbook-base/promptfooconfig.yaml ]; then
+            echo "Bootstrap: template anterior ainda não possuía suíte; gate absoluto aplicado."
+            exit 0
+          fi
+          # Usa dependências fixadas do candidato; a rubrica/config da base continua versionada.
+          ln -s "$PWD/node_modules" /tmp/playbook-base/node_modules
+          (
+            cd /tmp/playbook-base
+            # A base pode falhar; manter o relatório para comparar sem mascarar falha do candidato.
+            node node_modules/promptfoo/dist/src/main.js eval -c promptfooconfig.yaml -o "$GITHUB_WORKSPACE/results/base.json" --no-cache --max-concurrency 1 || true
+          )
+          node scripts/gate.cjs results/head.json results/base.json
+      - name: Official promptfoo action — PR comment and fresh evaluation
+        if: github.event_name == 'pull_request'
+        uses: promptfoo/promptfoo-action@04839e664f52212b877170219dab0d7ad2bf6440 # v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          config: promptfooconfig.yaml
+          use-config-prompts: 'true'
+          force-run: 'true'
+          no-share: 'true'
+          no-cache: 'true'
+          promptfoo-version: '0.125.1'
+          fail-on-threshold: '100'
+          max-concurrency: '1'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: live-evaluation-results
+          path: results/
+          retention-days: 14
