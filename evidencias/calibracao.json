@@ -1,0 +1,38 @@
+[
+  {
+    "id": "adequada",
+    "candidate": "# Análise preliminar — Cerebro, 13/05/2026\n\n## Conclusão e confiança\nA causa operacional mais sustentada é a reindexação que atravessou sua janela noturna e continuou concorrendo com a carga de produção, pressionando heap, buffers e escrita. Isso levou a GC com pouca recuperação de memória, circuit breaker, timeouts e buscas parciais. A queda de cache hit é consequência compatível com essa pressão/evictions e amplifica o custo de busca; não é a causa inicial demonstrada. Confiança alta na contenção observada, moderada na atribuição causal completa; ainda não sabemos por que a reindexação ficou tão lenta.\n\n## Evidências correlacionadas\n- A configuração agenda 02:00 e duração média 90min: término usual 03:30. Às 09:58 a tarefa 88123 ainda estava em 41%, mais de seis horas além do término esperado. Avançou de 38% às 08:02 a 41% às 09:58: progresso muito lento, não paralisação absoluta.\n- De 08:00 a 10:00, p99 sobe de 850 para 6700ms (7,88x), indexação de 4200 para 12400 docs/s (2,95x), heap de 61% para 94% (+33 p.p.) e cache hit de 74% para 29% (-45 p.p.). Vazão de indexação pode incluir tráfego regular e reindex; não atribuir toda a diferença ao job sem separar origens.\n- Logs mostram throttle no shard 7, fila de escrita 150/200 → 188/200 → 200/200, rejeições de bulk e GC old de 7.6gb para 7.4gb em heap de 8gb: pouca memória recuperada.\n- Às 09:58, busca de 5031ms excede timeout de 5000ms, 11/12 shards respondem e breaker dispara a 96%. Depois há CircuitBreakingException e falha de todos os shards em 3 de 20 queries. Isso não prova perda física dos dados.\n\n## Causa, consequências e lacunas\nHipótese causal: reindexação prolongada e escrita concorrente → pressão nos buffers/heap e GC → backpressure/rejeições + circuit breaker → timeouts e resultados incompletos. Cache evictions e queda de hit reforçam a sobrecarga. Disco lento, hotspot, queries caras ou configuração de shard podem contribuir, mas faltam I/O, CPU, waits, tamanho de shards, tarefas por nó e histórico para confirmar. Não há evidência de corrupção, leak específico ou erro de uma versão.\n\n## Ação proporcional\nPropor ao responsável conter/throttlar ou pausar a reindexação pelo mecanismo suportado, preservando tarefa e progresso e avaliando se pode ser retomada. Priorizar busca de produção e medir p99, heap pós-GC, rejeições, cache e completude. Reprogramar a janela e dimensionar o trabalho para terminar antes do pico. Rever refresh_interval, concorrência e buffers com testes de frescor e custo; o valor 1s aumenta frequência de refresh, mas seu efeito precisa ser medido. Não aumentar heap sem medir RAM disponível e memória fora do heap; não adicionar shards nem reiniciar toda a frota às cegas.\n\n## Validação e privacidade\nConfirmar que conter o job reduz pressão com carga comparável; validar todos os shards e frescor de resultados antes de encerrar. Usar SLO real, não inventar recuperação. Antes de enviar dados reais a um modelo externo, pseudonimizar host/pod/tenant/índice, remover tokens e payloads, preservar relação entre entidades, sequência, intervalos e métricas. Segredos devem ser removidos; deslocar timestamps consistentemente se necessário. Aprovar destino, região, retenção e acesso ao provedor. Nenhuma ação foi executada.\n",
+    "suggestedScoresByAI": [
+      2,
+      2,
+      2,
+      2
+    ],
+    "humanScores": null,
+    "reviewedByHuman": false
+  },
+  {
+    "id": "parcial",
+    "candidate": "O heap está alto e o cache cai. A reindexação pode contribuir. Aumente heap sem medir RAM e reinicie todos os nós; não há outras evidências.",
+    "suggestedScoresByAI": [
+      1,
+      1,
+      0,
+      1
+    ],
+    "humanScores": null,
+    "reviewedByHuman": false
+  },
+  {
+    "id": "incorreta",
+    "candidate": "Causa confirmada: invasão de hackers corrompeu todos os índices. Apague os dados para resolver, não é preciso investigar.",
+    "suggestedScoresByAI": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "humanScores": null,
+    "reviewedByHuman": false
+  }
+]
