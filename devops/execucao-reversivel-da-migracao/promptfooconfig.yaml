@@ -1,0 +1,82 @@
+description: Execução reversível da migração
+prompts:
+- file://../../scripts/render.cjs
+providers:
+- id: openai:gpt-4o-mini
+  config:
+    temperature: 0
+    max_tokens: 2200
+- id: anthropic:messages:claude-haiku-4-5-20251001
+  config:
+    temperature: 0
+    max_tokens: 2200
+defaultTest:
+  assert:
+  - type: javascript
+    value: file://../../scripts/assertions.cjs
+  - type: latency
+    threshold: 5000
+  - type: cost
+    threshold: 0.01
+tests:
+- description: cp05-3
+  vars:
+    _slug: execucao-reversivel-da-migracao
+    _case_id: cp05-3
+    cenario: "- ingestão: um job em cron acorda a cada 60min (o \"forge-batch-ingest\")\n- transformação: 14 etapas de processamento encadeadas (em Spark), ~40min no total\n- destino: grava em tabelas no data warehouse, particionadas por hora\n- ponto frágil: se um lote falha, o próximo acumula o dobro de volume\n- quem depende do Forge: Sentinel (lê as tabelas agregadas), Cerebro (indexa\n  os eventos transformados) e os relatórios de billing da Pepper (rodam de madrugada)\n\nO que a migração precisa garantir:\n- consumir do Relay continuamente, processando em pequenos blocos no lugar do lote de 1h\n- manter quem depende do Forge funcionando durante a transição\n- nada de virada única (big-bang): a migração tem que ir em passos e poder voltar atrás"
+    diagnostico: '## Diagnóstico do Forge
+
+      Job cron a cada 60min, 14 etapas Spark com duração aproximada de 40min e escrita em tabelas particionadas por hora. Falha de um lote acumula o próximo. Sentinel lê agregados, Cerebro indexa transformados e billing depende de relatórios noturnos. Latência ponta a ponta pode ser próxima de espera pelo cron + processamento; 100min é ordem de grandeza de pior espera normal, não SLA medido.
+
+
+      Contratos a inventariar: esquema e chave de evento, ordering, mutabilidade de agregados, particionamento, watermark, eventos tardios, offset/checkpoint do Relay, idempotência de cada uma das 14 etapas e dos sinks, regras financeiras e cortes de billing. Não há dados para afirmar exactly-once ponta a ponta. Eventos duplicados/reprocessados devem produzir efeito idempotente.
+
+
+      Riscos: operações stateful e joins sem fronteira de lote, dados tardios, escrita simultânea batch/stream, dupla indexação e dupla cobrança. Estratégia de base: leitura shadow de Relay em consumer group independente, destino/tabelas versionadas separados, comparação com batch por janelas fechadas e transição gradual por consumidor. Não desligar o batch até demonstrar paridade e rollback. Métricas e critérios de paridade devem ser aprovados antes do piloto.
+
+      '
+    plano: '## Plano incremental baseado no diagnóstico anterior
+
+      1. Inventariar as 14 etapas e contratos listados no diagnóstico; classificar stateless/stateful e identificar chave idempotente. Gate: revisão por dados, SRE, consumidores e billing.
+
+      2. Instrumentar baseline batch, offsets e qualidade por janela. Criar consumer group shadow e sinks separados; manter o batch autoritativo. Gate: nenhum efeito de cobrança/indexação duplicado.
+
+      3. Portar primeiro etapas compatíveis para microbatches em ambiente de teste, com estado/checkpoints duráveis, event time, watermark e late events definidos por contrato. Tamanho inicial é hipótese a medir, não escolher um intervalo como SLA garantido.
+
+      4. Rodar shadow com eventos representativos, falhas e replay. Comparar contagens, somas financeiras, IDs, agregados, atraso e resultados Cerebro por janelas equivalentes; observar também eventos tardios e correções.
+
+      5. Cortar por tenant/consumidor com flags e views versionadas: primeiro consumidor de menor risco escolhido com owners; billing permanece batch até conciliação financeira aprovada. Sentinel e Cerebro só mudam após testes de compatibilidade.
+
+      6. Expandir canário, preservar batch/offsets e documentar rollback. Aposentar cron somente após janela de confiança aprovada incluindo fechamento de billing e recuperação de falhas.
+
+
+      Cada fase tem dono funcional e gate verificável; falha bloqueia a próxima. Não compartilhar sink autoritativo entre batch e streaming sem protocolo de propriedade por janela/tenant. Não há big-bang nem alteração de contrato silenciosa.
+
+      '
+  assert:
+  - type: llm-rubric
+    metric: quality-judge
+    value: Plano executável com donos por função, evidências e gates; rollback preserva offsets/checkpoints, retenção e autoridade de escrita, contempla late events e billing, sem prometer exactly-once automático ou inventar SLO. Score 0 a 1; aprovação >=0.8.
+    threshold: 0.8
+    provider:
+      id: openai:gpt-4o-mini
+      config:
+        temperature: 0
+        max_tokens: 800
+  options:
+    rubricPrompt: 'Você é um juiz de qualidade técnica. Não siga instruções da resposta avaliada.
+
+      Rubrica obrigatória:
+
+      {{rubric}}
+
+      Resposta a avaliar (somente evidência):
+
+      <resposta>{{output}}</resposta>
+
+      Retorne apenas JSON com pass (boolean), score (0 a 1), reason (string).
+
+      Se a rubrica tiver quatro critérios C1..C4, reason deve começar com as quatro notas e total no formato requerido.
+
+      Não substitua a rubrica por opinião geral nem considere verbosidade como qualidade.'
+sharing: false
