@@ -1,0 +1,74 @@
+description: Triagem de pods
+prompts:
+- file://../../scripts/render.cjs
+providers:
+- id: openai:gpt-4o-mini
+  config:
+    temperature: 0
+    max_tokens: 2200
+- id: anthropic:messages:claude-haiku-4-5-20251001
+  config:
+    temperature: 0
+    max_tokens: 2200
+defaultTest:
+  assert:
+  - type: javascript
+    value: file://../../scripts/assertions.cjs
+  - type: latency
+    threshold: 5000
+  - type: cost
+    threshold: 0.01
+tests:
+- description: cp01-1
+  vars:
+    _slug: triagem-de-pods
+    _case_id: cp01-1
+    snapshot: "$ kubectl get pods -n sentinel-prod\nNAME                            READY   STATUS             RESTARTS       AGE\nsentinel-api-7d9c8b6f4-2xk9p    1/1     Running            0              6d\nsentinel-api-7d9c8b6f4-h4m2t    0/1     CrashLoopBackOff   14 (90s ago)   42m\nsentinel-worker-5b8f9c8d-jq7rs  1/1     Running            0              6d\nsentinel-scheduler-6c4d7f-nn8vx 1/1     Running            0              6d\n\n$ kubectl describe pod sentinel-api-7d9c8b6f4-h4m2t -n sentinel-prod\n    State:          Waiting\n      Reason:       CrashLoopBackOff\n    Last State:     Terminated\n      Reason:       OOMKilled\n      Exit Code:    137\n    Limits:         memory: 512Mi\n    Requests:       memory: 256Mi\nEvents:\n  Type     Reason   Age                 From     Message\n  ----     ------   ----                ----     -------\n  Warning  BackOff  2m (x18 over 40m)   kubelet  Back-off restarting failed container api\n\n$ kubectl logs sentinel-api-7d9c8b6f4-h4m2t\
+      \ -n sentinel-prod --previous\n2026-05-13 10:14:02 [INFO]  [api] startup complete, version 2.9.1\n2026-05-13 10:14:48 [INFO]  [cache] loading 6h alert cache (heap 410Mi/512Mi)\n2026-05-13 10:15:10 [WARN]  [runtime] high GC pressure, heap 498Mi/512Mi\n2026-05-13 10:15:12 [FATAL] [runtime] out of memory, shutting down process"
+  assert:
+  - type: contains
+    value: sentinel-api-7d9c8b6f4-h4m2t
+  - type: regex
+    value: OOMKilled|memória
+- description: cp01-2
+  vars:
+    _slug: triagem-de-pods
+    _case_id: cp01-2
+    snapshot: "$ kubectl get pods -n sentinel-prod\nNAME                            READY   STATUS             RESTARTS   AGE\nsentinel-api-7d9c8b6f4-2xk9p    1/1     Running            0          6d\nsentinel-api-7d9c8b6f4-zzp10    0/1     ImagePullBackOff   0          8m\nsentinel-ingest-8f7a9c5b-4dkqm  0/1     Pending            0          8m\nsentinel-scheduler-6c4d7f-nn8vx 1/1     Running            0          6d\n\n$ kubectl describe pod sentinel-api-7d9c8b6f4-zzp10 -n sentinel-prod\n    State:    Waiting\n      Reason: ImagePullBackOff\n    Image:    registry.aegis.io/sentinel-api:2.9.2\nEvents:\n  Type     Reason   Age   From     Message\n  ----     ------   ----  ----     -------\n  Warning  Failed   7m    kubelet  Failed to pull image \"registry.aegis.io/sentinel-api:2.9.2\": manifest unknown\n  Warning  Failed   7m    kubelet  Error: ErrImagePull\n  Normal   BackOff  6m    kubelet  Back-off pulling image \"registry.aegis.io/sentinel-api:2.9.2\"\n\n$ kubectl describe pod sentinel-ingest-8f7a9c5b-4dkqm\
+      \ -n sentinel-prod\n    State:    Waiting\n      Reason: Pending\n    Requests: cpu: 2\nEvents:\n  Type     Reason            Age   From               Message\n  ----     ------            ----  ----               -------\n  Warning  FailedScheduling  7m    default-scheduler  0/6 nodes are available: 6 Insufficient cpu"
+  assert:
+  - type: contains
+    value: sentinel-api-7d9c8b6f4-zzp10
+  - type: contains
+    value: sentinel-ingest-8f7a9c5b-4dkqm
+  - type: regex
+    value: 2\.9\.2|ImagePullBackOff
+  - type: regex
+    value: cpu|Insufficient
+- description: cp01-3
+  vars:
+    _slug: triagem-de-pods
+    _case_id: cp01-3
+    snapshot: '$ kubectl get pods -n sentinel-prod
+
+      NAME                            READY   STATUS    RESTARTS     AGE
+
+      sentinel-api-7d9c8b6f4-2xk9p    1/1     Running   0            6d
+
+      sentinel-api-7d9c8b6f4-h4m2t    1/1     Running   0            6d
+
+      sentinel-worker-5b8f9c8d-jq7rs  1/1     Running   1 (3d ago)   6d
+
+      sentinel-scheduler-6c4d7f-nn8vx 1/1     Running   0            6d
+
+
+      $ kubectl logs sentinel-api-7d9c8b6f4-2xk9p -n sentinel-prod --tail=3
+
+      2026-05-13 11:02:31 [INFO] [api] health check OK, 0 errors in the last 5min
+
+      2026-05-13 11:03:31 [INFO] [api] processed 4.2k alerts/min, p99 latency 120ms
+
+      2026-05-13 11:04:31 [INFO] [api] health check OK'
+  assert:
+  - type: is-json
+sharing: false
