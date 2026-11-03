@@ -9,7 +9,7 @@ Fork real de [fabricioveronez/prompt-registry](https://github.com/fabricioverone
 - Biblioteca, prompts, documentação, fixtures, oito configs e workflow implementados.
 - Respostas dos CP01–06 geradas pelo **GPT-6, Codex nesta conversa**, com contexto compartilhado e sem chamadas independentes. São registros de elaboração assistida, não sessões isoladas.
 - `promptfoo eval` executado em modo **replay** sobre respostas registradas para validar asserts. Replay não mede inferência, custo, latência de modelo ou julgamento LLM.
-- **Pendentes:** chamadas reais em dois provedores, limites live de 5s/US$ 0,01 e calibração do juiz contra notas humanas. A suíte live falha de forma explícita sem configuração, sem fingir aprovação.
+- **Pendentes:** comparação real entre os dois modelos OpenAI, limites live de 5s/US$ 0,01 e calibração do juiz contra notas humanas. A pedido do autor, esta versão usa um único fornecedor; portanto não cumpre a exigência original de dois provedores do desafio. A suíte live falha de forma explícita sem configuração, sem fingir aprovação.
 - O [workflow foi executado no GitHub](https://github.com/tfcarv2/playbook-ia-operacional/actions/runs/41554477116): **offline aprovado**; live bloqueado no preflight por `OPENAI_API_KEY` ausente. Evidências e limites em [VALIDACAO.md](VALIDACAO.md).
 
 Não declarar o capstone integralmente concluído antes de fechar essas pendências. Nenhum sistema de produção foi acessado ou alterado.
@@ -56,14 +56,22 @@ npm test
 npm run eval:replay
 ```
 
-Para a suíte com inferência real, configure `OPENAI_API_KEY` e `ANTHROPIC_API_KEY` no ambiente local ou em GitHub Actions Secrets. Os modelos candidatos configurados são GPT-4o mini e Claude Haiku 4.5; confirmar disponibilidade na conta. A escolha favorece custo/latência, mas só o benchmark pode comprovar os limites exigidos. O GPT usado na elaboração deste repositório não é apresentado como esse benchmark.
+Para inferência real, configure somente `OPENAI_API_KEY` no ambiente ou em GitHub Actions Secrets. Não é necessária chave de outro fornecedor. Todas as oito configs e a suíte agregada comparam **`openai:gpt-4o-mini`** e **`openai:gpt-6-luna`** com temperatura 0. No Luna, `reasoning_effort: none` evita raciocínio adicional nesta avaliação de custo/latência; os limites continuam sujeitos a medição.
+
+O GPT-4o mini permanece como baseline legado. A [documentação oficial de descontinuações](https://developers.openai.com/api/docs/deprecations) prevê seu encerramento em **14/01/2027** e recomenda o [GPT-6 Luna](https://developers.openai.com/api/docs/models/gpt-6-luna). Atualizar o baseline antes dessa data. Disponibilidade e quota dependem da conta.
 
 ```bash
+# 7 casos estruturados × 2 modelos; sem juiz LLM ou calibração humana:
+node scripts/run.cjs compare
+node scripts/model-report.cjs results/compare
+# Suíte completa, incluindo juiz:
 npm run eval:live
-# Preencher notas humanas antes de validar calibração:
-npx promptfoo eval -c calibracao.yaml -o results/calibracao.json --no-cache
+# Preencher notas humanas verdadeiras antes de validar calibração:
+npx promptfoo eval -c calibracao.yaml -o results/calibracao.json --no-cache --no-share
 node scripts/calibrate.cjs results/calibracao.json
 ```
+
+No Actions, `offline` valida contratos e replay; `compare-models` executa a comparação estruturada e publica tabela/artifact com passes, falhas, erros, custo informado e latência. Depois, `live` exige as notas humanas antes de calibrar o juiz e avaliar a suíte completa. A comparação estruturada não substitui essa calibração nem a validação das respostas abertas. Não repetir chamadas apenas para obter aprovação.
 
 ## Método e reutilização
 
