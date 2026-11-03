@@ -5,9 +5,9 @@ const YAML = require('yaml');
 const root=path.resolve(__dirname,'..');
 const catalog=JSON.parse(fs.readFileSync(path.join(root,'evidencias/catalogo.json'),'utf8'));
 const mode=process.argv[2] || 'replay';
-if (!['replay','live','prepare'].includes(mode)) throw new Error('Modo inválido');
-if (mode==='live') {
-  for (const key of ['OPENAI_API_KEY','ANTHROPIC_API_KEY']) {
+if (!['replay','live','prepare','compare'].includes(mode)) throw new Error('Modo inválido');
+if (mode==='live' || mode==='compare') {
+  for (const key of ['OPENAI_API_KEY']) {
     if (!process.env[key]) { console.error(`PENDENTE: configure ${key} localmente ou em GitHub Secrets. Nenhuma chamada realizada.`); process.exit(2); }
   }
 }
@@ -16,6 +16,7 @@ fs.mkdirSync(outDir,{recursive:true});
 let failed=false;
 const summaries=[];
 for (const [slug] of catalog) {
+  if (mode==='compare' && !['triagem-de-pods','nota-de-triagem','networkpolicy-sentinel'].includes(slug)) continue;
   const original=YAML.parse(fs.readFileSync(path.join(root,'devops',slug,'promptfooconfig.yaml'),'utf8'));
   const cfg=structuredClone(original);
   cfg.prompts=['file://'+path.join(root,'scripts/render.cjs')];
