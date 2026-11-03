@@ -37,8 +37,40 @@ jobs:
           path: results/replay/
           retention-days: 14
 
-  live:
+  compare-models:
     needs: offline
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      PROMPTFOO_DISABLE_TELEMETRY: '1'
+      PROMPTFOO_DISABLE_UPDATE: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Compare two OpenAI models on structured prompts
+        run: node scripts/run.cjs compare
+      - name: Summarize model comparison
+        if: always()
+        run: |
+          node scripts/model-report.cjs results/compare
+          cat results/compare/model-comparison.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: openai-model-comparison
+          path: results/compare/
+          retention-days: 14
+
+  live:
+    needs: [offline, compare-models]
     # Forks não recebem credenciais. Não usar pull_request_target.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
@@ -48,7 +80,6 @@ jobs:
       pull-requests: write
     env:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
       PROMPTFOO_DISABLE_TELEMETRY: '1'
       PROMPTFOO_DISABLE_UPDATE: '1'
       BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before || '' }}
@@ -62,10 +93,10 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
-      - name: Require configured providers and human review
+      - name: Require OpenAI key and human review
         run: |
           node - <<'JS'
-          for (const key of ['OPENAI_API_KEY','ANTHROPIC_API_KEY']) {
+          for (const key of ['OPENAI_API_KEY']) {
             if (!process.env[key]) throw new Error(`PENDENTE: configurar GitHub Secret ${key}`);
           }
           const refs = require('./evidencias/calibracao.json');
@@ -77,11 +108,11 @@ jobs:
         run: |
           mkdir -p results
           # Casos negativos da calibração devem falhar no rubric; o verificador abaixo valida a concordância.
-          npx promptfoo eval -c calibracao.yaml -o results/calibracao.json --no-cache --max-concurrency 1 || true
+          npx promptfoo eval -c calibracao.yaml -o results/calibracao.json --no-cache --no-share --max-concurrency 1 || true
           node scripts/calibrate.cjs results/calibracao.json
       - name: Evaluate candidate with full suite
         run: |
-          npx promptfoo eval -c promptfooconfig.yaml -o results/head.json --no-cache --max-concurrency 1
+          npx promptfoo eval -c promptfooconfig.yaml -o results/head.json --no-cache --no-share --max-concurrency 1
           node scripts/gate.cjs results/head.json
       - name: Evaluate comparable baseline
         run: |
@@ -94,13 +125,11 @@ jobs:
             echo "Bootstrap: template anterior ainda não possuía suíte; gate absoluto aplicado."
             exit 0
           fi
-          # Usa dependências fixadas do candidato; a rubrica/config da base continua versionada.
+          # Casos/modelos/rubrica atuais; somente o texto dos prompts vem da base.
+          # Não executar configs históricas de fornecedores removidos.
           ln -s "$PWD/node_modules" /tmp/playbook-base/node_modules
-          (
-            cd /tmp/playbook-base
-            # A base pode falhar; manter o relatório para comparar sem mascarar falha do candidato.
-            node node_modules/promptfoo/dist/src/main.js eval -c promptfooconfig.yaml -o "$GITHUB_WORKSPACE/results/base.json" --no-cache --max-concurrency 1 || true
-          )
+          node scripts/baseline.cjs /tmp/playbook-base results/base-config.yaml
+          npx promptfoo eval -c results/base-config.yaml -o results/base.json --no-cache --no-share --max-concurrency 1 || true
           node scripts/gate.cjs results/head.json results/base.json
       - name: Official promptfoo action — PR comment and fresh evaluation
         if: github.event_name == 'pull_request'
