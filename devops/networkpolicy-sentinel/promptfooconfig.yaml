@@ -1,0 +1,50 @@
+description: NetworkPolicy do Sentinel
+prompts:
+- file://../../scripts/render.cjs
+providers:
+- id: openai:gpt-4o-mini
+  config:
+    temperature: 0
+    max_tokens: 2200
+- id: anthropic:messages:claude-haiku-4-5-20251001
+  config:
+    temperature: 0
+    max_tokens: 2200
+defaultTest:
+  assert:
+  - type: javascript
+    value: file://../../scripts/assertions.cjs
+  - type: latency
+    threshold: 5000
+  - type: cost
+    threshold: 0.01
+tests:
+- description: cp06-v2
+  vars:
+    _slug: networkpolicy-sentinel
+    _case_id: cp06-v2
+    manifesto: "# manifesto barrado pela revisão de segurança — permissivo demais\napiVersion: networking.k8s.io/v1\nkind: NetworkPolicy\nmetadata:\n  name: sentinel-allow\n  namespace: sentinel-prod\nspec:\n  podSelector: {}          # aplica a todos os pods do namespace\n  policyTypes:\n    - Ingress\n    - Egress\n  ingress:\n    - {}                   # libera QUALQUER origem\n  egress:\n    - {}                   # libera QUALQUER destino"
+    regras: "\"sentinel-prod\":\n- pods do Sentinel só aceitam tráfego de entrada do Relay (consumo de\n  eventos) e do gateway de API da plataforma\n- pods do Sentinel só fazem saída para: Forge (warehouse, porta 5432),\n  Cerebro (busca, porta 9200) e DNS interno\n- nada de \"allow all\" em ingress ou egress\n- política default-deny explícita no namespace\n- toda regra precisa de comentário dizendo qual fluxo legítimo ela libera"
+    mapa_servicos: 'Sentinel → namespace sentinel-prod, pods com label app=sentinel
+
+      Relay        → namespace relay-prod,    pods com label app=relay
+
+      API gateway  → namespace edge,          pods com label app=api-gateway
+
+      Forge        → namespace forge-prod,    pods com label app=forge,   porta 5432 (Postgres do warehouse)
+
+      Cerebro      → namespace cerebro-prod,  pods com label app=cerebro, porta 9200 (Elasticsearch)
+
+      DNS interno  → namespace kube-system,   pods com label k8s-app=kube-dns, porta 53'
+  assert:
+  - type: contains
+    value: 'kind: NetworkPolicy'
+  - type: not-contains
+    value: '- {}'
+  - type: regex
+    value: 'app: relay'
+  - type: contains
+    value: 'port: 5432'
+  - type: contains
+    value: 'port: 9200'
+sharing: false
