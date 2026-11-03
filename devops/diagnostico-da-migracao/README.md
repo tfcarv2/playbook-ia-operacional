@@ -35,7 +35,7 @@ Primeiro elo de uma cadeia, focado em diagnóstico e contratos. Refino: explicit
 
 As respostas iniciais foram geradas pelo GPT-6, Codex nesta conversa, com contexto compartilhado, em 02/11/2026; não são chamadas de API isoladas. Escolha motivada por análise técnica e consistência de instruções. Não houve medição de custo/token ou latência de inferência nesta sessão.
 
-O config prepara avaliação live com OpenAI e Anthropic em modelos compactos; nomes configurados são candidatos, não provedores já executados. Os limites de 5s e US$ 0,01 precisam ser medidos. Casos fictícios podem ser publicados; dados reais exigem sanitização e política de retenção do provedor aprovada.
+O config compara `openai:gpt-4o-mini` e `openai:gpt-6-luna` com a mesma `OPENAI_API_KEY`. Luna usa `reasoning_effort: none` para a comparação de baixa latência; nomes configurados não comprovam execução. É uma comparação entre dois modelos de um único fornecedor, por solicitação do autor, e não atende à regra acadêmica de dois provedores. GPT-4o mini é um baseline legado; seu ciclo de vida está documentado no README da raiz. Os limites de 5s e US$ 0,01 precisam ser medidos. Casos fictícios podem ser publicados; dados reais exigem sanitização e política de retenção do provedor aprovada.
 
 ## Limitações
 
