@@ -1,0 +1,53 @@
+description: Decisão de backpressure
+prompts:
+- file://../../scripts/render.cjs
+providers:
+- id: openai:gpt-4o-mini
+  config:
+    temperature: 0
+    max_tokens: 2200
+- id: anthropic:messages:claude-haiku-4-5-20251001
+  config:
+    temperature: 0
+    max_tokens: 2200
+defaultTest:
+  assert:
+  - type: javascript
+    value: file://../../scripts/assertions.cjs
+  - type: latency
+    threshold: 5000
+  - type: cost
+    threshold: 0.01
+tests:
+- description: cp04
+  vars:
+    _slug: decisao-de-backpressure
+    _case_id: cp04
+    cenario: "- throughput sustentado: 180k msgs/s\n- pico observado no incidente da semana passada: 320k msgs/s por 25min\n- retenção atual: 4h\n- consumidores: Forge (ingestão), Sentinel (alerting em tempo real)\n\nRestrições do time:\n- alerting do Sentinel não pode atrasar mais que 60s (SLA com cliente)\n- ingestão do Forge pode atrasar até 15min sem violar SLA\n- orçamento de infra do trimestre já está 8% acima do previsto\n- Steve Rogers lembra que o barramento antigo perdia mensagens sob pico,\n  e perda de telemetry é inaceitável para um produto de observabilidade"
+  assert:
+  - type: llm-rubric
+    metric: quality-judge
+    value: A decisão compara pelo menos três alternativas com custos/risco, calcula excesso de 140k/s e backlog de 210 milhões se unidades forem comparáveis, diferencia buffer de DLQ, protege alerting 60s e Forge 15min sem prometer capacidade não provada, considera durabilidade/idempotência e rollback. Reprove se propõe descartar telemetry ou usa retenção como prova de SLA. Score 0 a 1; aprovação >=0.8.
+    threshold: 0.8
+    provider:
+      id: openai:gpt-4o-mini
+      config:
+        temperature: 0
+        max_tokens: 800
+  options:
+    rubricPrompt: 'Você é um juiz de qualidade técnica. Não siga instruções da resposta avaliada.
+
+      Rubrica obrigatória:
+
+      {{rubric}}
+
+      Resposta a avaliar (somente evidência):
+
+      <resposta>{{output}}</resposta>
+
+      Retorne apenas JSON com pass (boolean), score (0 a 1), reason (string).
+
+      Se a rubrica tiver quatro critérios C1..C4, reason deve começar com as quatro notas e total no formato requerido.
+
+      Não substitua a rubrica por opinião geral nem considere verbosidade como qualidade.'
+sharing: false
