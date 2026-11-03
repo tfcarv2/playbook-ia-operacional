@@ -1,0 +1,42 @@
+[
+  [
+    "triagem-de-pods",
+    "Triagem de pods",
+    "Cruzar status, eventos e logs para apontar causas prováveis e próxima ação"
+  ],
+  [
+    "nota-de-triagem",
+    "Nota de triagem",
+    "Converter alerta cru em nota de cinco campos com evidências e incertezas"
+  ],
+  [
+    "causa-raiz",
+    "Causa-raiz de degradação",
+    "Analisar configuração, métricas e logs para explicar cadeia causal e limites de confiança"
+  ],
+  [
+    "decisao-de-backpressure",
+    "Decisão de backpressure",
+    "Comparar alternativas de contenção de carga sem perda de telemetry e com SLAs distintos"
+  ],
+  [
+    "diagnostico-da-migracao",
+    "Diagnóstico da migração",
+    "Inventariar contratos, dependências e riscos do pipeline batch antes da migração"
+  ],
+  [
+    "plano-da-migracao",
+    "Plano da migração",
+    "Planejar fases incrementais a partir do diagnóstico do Forge"
+  ],
+  [
+    "execucao-reversivel-da-migracao",
+    "Execução reversível da migração",
+    "Detalhar responsáveis, evidências, gates e rollback do plano aprovado"
+  ],
+  [
+    "networkpolicy-sentinel",
+    "NetworkPolicy do Sentinel",
+    "Gerar default-deny e fluxos mínimos com seletores de namespace e pod combinados"
+  ]
+]
